@@ -73,6 +73,7 @@ public class Interpreter : Expr.Visitor<Object>
         }
       case TokenType.SLASH:
         CheckNumberOperands(expr.op, left, right);
+        if ((double)right == 0) throw new RuntimeError(expr.op, "Illegal division by 0 detected.");
         return (double)left / (double)right;
       case TokenType.STAR:
         CheckNumberOperands(expr.op, left, right);
