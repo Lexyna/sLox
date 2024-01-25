@@ -69,6 +69,10 @@ public class Interpreter : Expr.Visitor<Object>
             return (double)left + (double)right;
           if (left.GetType() == typeof(String) && right.GetType() == typeof(String))
             return (String)left + (String)right;
+          if (left.GetType() == typeof(String) && right.GetType() == typeof(Double))
+            return (string)left + (double)right;
+          if (left.GetType() == typeof(Double) && right.GetType() == typeof(String))
+            return (double)left + (string)right;
           throw new RuntimeError(expr.op, "Opreands must both either be numbers or strings.");
         }
       case TokenType.SLASH:
