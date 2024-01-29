@@ -2,6 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 using AST;
+using tools;
 
 public class Lox
 {

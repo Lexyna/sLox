@@ -6,11 +6,16 @@ namespace tools
 
     public static void Generate(string outputDir)
     {
-      DefineAST(outputDir, "Expr", new List<string>(){
+      /*DefineAST(outputDir, "Expr", new List<string>(){
         "Binary : Expr left, Token op, Expr right",
         "Grouping : Expr expression",
         "Literal : Object value",
         "Unary : Token op, Expr right"
+      });*/
+      DefineAST(outputDir, "Stmt", new List<string>()
+      {
+        "Expression : Expr expression",
+        "Print : Expr expression"
       });
     }
 
