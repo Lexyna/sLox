@@ -1,13 +1,14 @@
+using System.Runtime.CompilerServices;
 using AST;
-public class Interpreter : Expr.Visitor<Object>
+public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
 {
 
-  public void interpret(Expr expression)
+  public void Interpret(List<Stmt> statments)
   {
     try
     {
-      Object value = Evaluate(expression);
-      Console.WriteLine(Stringify(value));
+      foreach (var statment in statments)
+        Execute(statment);
     }
     catch (RuntimeError error)
     {
@@ -99,6 +100,24 @@ public class Interpreter : Expr.Visitor<Object>
     return expr.Accept(this);
   }
 
+  private void Execute(Stmt stmt)
+  {
+    stmt.Accept(this);
+  }
+
+  public Object VisitExpressionStmt(Stmt.Expression stmt)
+  {
+    Evaluate(stmt.expression);
+    return typeof(void);
+  }
+
+  public Object VisitPrintStmt(Stmt.Print stmt)
+  {
+    Object value = Evaluate(stmt.expression);
+    Console.WriteLine(Stringify(value));
+    return typeof(void);
+  }
+
   private bool IsTruthy(Object obj)
   {
     if (obj == null) return false;
@@ -129,5 +148,4 @@ public class Interpreter : Expr.Visitor<Object>
     }
     return obj.ToString();
   }
-
 }

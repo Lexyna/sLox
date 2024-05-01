@@ -1,3 +1,4 @@
+using System.Data;
 using AST;
 
 public class Parser
@@ -16,7 +17,7 @@ public class Parser
     this.tokens = tokens;
   }
 
-  public Expr Parse()
+  /*public Expr Parse()
   {
     try
     {
@@ -26,6 +27,36 @@ public class Parser
     {
       return null;
     }
+  }*/
+
+  public List<Stmt> Parse()
+  {
+    List<Stmt> statments = new List<Stmt>();
+    while (!IsAtEnd())
+    {
+      statments.Add(Statement());
+    }
+    return statments;
+  }
+
+  private Stmt Statement()
+  {
+    if (Match(TokenType.PRINT)) return PrintStatement();
+    return ExpressionStatement();
+  }
+
+  private Stmt PrintStatement()
+  {
+    Expr value = Expression();
+    Consume(TokenType.SEMICOLON, "Expected ';' after value.");
+    return new Stmt.Print(value);
+  }
+
+  private Stmt ExpressionStatement()
+  {
+    Expr expr = Expression();
+    Consume(TokenType.SEMICOLON, "Expected ';' after expression.");
+    return new Stmt.Expression(expr);
   }
 
   private Expr Expression()

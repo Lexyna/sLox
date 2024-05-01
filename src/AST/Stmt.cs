@@ -7,8 +7,8 @@ namespace AST
   {
     public interface Visitor<R>
     {
-      R visitExpressionStmt<R>(Expression stmt);
-      R visitPrintStmt<R>(Print stmt);
+      R VisitExpressionStmt(Expression stmt);
+      R VisitPrintStmt(Print stmt);
     }
     public class Expression : Stmt
     {
@@ -19,7 +19,7 @@ namespace AST
 
       public override R Accept<R>(Visitor<R> visitor)
       {
-        return visitor.visitExpressionStmt<R>(this);
+        return visitor.VisitExpressionStmt(this);
       }
 
       public readonly Expr expression;
@@ -33,7 +33,7 @@ namespace AST
 
       public override R Accept<R>(Visitor<R> visitor)
       {
-        return visitor.visitPrintStmt<R>(this);
+        return visitor.VisitPrintStmt(this);
       }
 
       public readonly Expr expression;

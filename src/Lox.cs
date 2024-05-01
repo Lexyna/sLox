@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using System.Runtime.InteropServices;
 using System.Text;
 using AST;
@@ -47,7 +48,6 @@ public class Lox
       if (String.IsNullOrEmpty(line)) break;
       Run(line);
       if (hadError) hadError = false;
-      //if (hadError) Environment.Exit(65);
     }
   }
 
@@ -57,11 +57,11 @@ public class Lox
     List<Token> tokens = scanner.ScanTokens();
 
     Parser parser = new Parser(tokens);
-    Expr expression = parser.Parse();
+    List<Stmt> statements = parser.Parse();
 
     if (hadError) return;
 
-    interpreter.interpret(expression);
+    interpreter.Interpret(statements);
     //Console.WriteLine(new AstPrinter().Print(expression));
   }
 
