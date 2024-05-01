@@ -71,7 +71,7 @@ namespace tools
       //Visitor
       writer.WriteLine();
       writer.WriteLine($"public override R Accept<R>(Visitor<R> visitor){{");
-      writer.WriteLine($"return visitor.visit{className}{baseName}<R>(this);");
+      writer.WriteLine($"return visitor.visit{className}{baseName}(this);");
       writer.WriteLine("}");
 
       //fields
@@ -93,7 +93,7 @@ namespace tools
         string typeName = type.Split(":")[0].Trim();
         writer.Write("R visit");
         writer.Write($"{typeName}");
-        writer.Write($"{baseName}<R>");
+        writer.Write($"{baseName}");
         writer.Write($"({typeName}");
         writer.Write($" {baseName.ToLower()});");
         writer.WriteLine();
