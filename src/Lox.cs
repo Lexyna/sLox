@@ -1,7 +1,7 @@
 using System;
 using System.Data;
-using System.Runtime.InteropServices;
 using System.Text;
+using System.Runtime.InteropServices;
 using AST;
 using tools;
 
@@ -17,7 +17,7 @@ public class Lox
     if (args.Length > 1)
     {
       Console.WriteLine("Usage: sLox [script]");
-      Environment.Exit(64);
+      System.Environment.Exit(64);
     }
     else if (args.Length == 1)
     {
@@ -33,8 +33,8 @@ public class Lox
   {
     byte[] bytes = File.ReadAllBytes(Path.GetFullPath(path));
     Run(Encoding.UTF8.GetString(bytes));
-    if (hadError) Environment.Exit(65);
-    if (hadRuntimeError) Environment.Exit(70);
+    if (hadError) System.Environment.Exit(65);
+    if (hadRuntimeError) System.Environment.Exit(70);
   }
 
   public static void RunPrompt()

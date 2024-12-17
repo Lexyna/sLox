@@ -3,6 +3,8 @@ using AST;
 public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
 {
 
+  private Environment environment = new Environment();
+
   public void Interpret(List<Stmt> statments)
   {
     try
@@ -36,6 +38,11 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
       case TokenType.MINUS: CheckNumberOperand(expr.op, right); return -(double)right;
     }
     return null;
+  }
+
+  public Object VisitVariableExpr(Expr.Variable expr)
+  {
+    return environment.Get(expr.name);
   }
 
   public Object VisitBinaryExpr(Expr.Binary expr)
@@ -116,6 +123,15 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
     Object value = Evaluate(stmt.expression);
     Console.WriteLine(Stringify(value));
     return typeof(void);
+  }
+
+  public Object VisitVarStmt(Stmt.Var stmt)
+  {
+    Object value = null;
+    if (stmt.initializer != null)
+      value = Evaluate(stmt.initializer);
+    environment.Define(stmt.name.lexeme, value);
+    return null;
   }
 
   private bool IsTruthy(Object obj)

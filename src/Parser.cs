@@ -1,4 +1,5 @@
 using System.Data;
+using System.Runtime.ConstrainedExecution;
 using AST;
 
 public class Parser
@@ -17,26 +18,29 @@ public class Parser
     this.tokens = tokens;
   }
 
-  /*public Expr Parse()
-  {
-    try
-    {
-      return Expression();
-    }
-    catch (ParseError error)
-    {
-      return null;
-    }
-  }*/
-
   public List<Stmt> Parse()
   {
     List<Stmt> statments = new List<Stmt>();
     while (!IsAtEnd())
     {
-      statments.Add(Statement());
+      statments.Add(Declaration());
     }
     return statments;
+  }
+
+  private Stmt Declaration()
+  {
+    try
+    {
+      if (Match(TokenType.VAR)) return VarDeclaration();
+
+      return Statement();
+    }
+    catch (ParseError error)
+    {
+      Syncronize();
+      return null;
+    }
   }
 
   private Stmt Statement()
@@ -62,6 +66,18 @@ public class Parser
   private Expr Expression()
   {
     return Equality();
+  }
+
+  private Stmt VarDeclaration()
+  {
+    Token name = Consume(TokenType.IDENTIFIER, "Expected variable name");
+
+    Expr initializer = null;
+    if (Match(TokenType.EQ))
+      initializer = Expression();
+
+    Consume(TokenType.SEMICOLON, "Expected `;` after variable declaration");
+    return new Stmt.Var(name, initializer);
   }
 
   private Expr Equality()
@@ -141,6 +157,11 @@ public class Parser
     if (Match(TokenType.NUMBER, TokenType.STRING))
     {
       return new Expr.Literal(Previous().literal);
+    }
+
+    if (Match(TokenType.IDENTIFIER))
+    {
+      return new Expr.Variable(Previous());
     }
 
     if (Match(TokenType.LEFT_PAREM))

@@ -16,7 +16,7 @@ namespace tools
       {
         "Expression : Expr expression",
         "Print : Expr expression",
-        "Var  : Token name"
+        "Var  : Token name, Expr initializer"
       });
     }
 
@@ -72,7 +72,7 @@ namespace tools
       //Visitor
       writer.WriteLine();
       writer.WriteLine($"public override R Accept<R>(Visitor<R> visitor){{");
-      writer.WriteLine($"return visitor.visit{className}{baseName}(this);");
+      writer.WriteLine($"return visitor.Visit{className}{baseName}(this);");
       writer.WriteLine("}");
 
       //fields
@@ -92,7 +92,7 @@ namespace tools
       foreach (string type in types)
       {
         string typeName = type.Split(":")[0].Trim();
-        writer.Write("R visit");
+        writer.Write("R Visit");
         writer.Write($"{typeName}");
         writer.Write($"{baseName}");
         writer.Write($"({typeName}");

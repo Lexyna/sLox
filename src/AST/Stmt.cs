@@ -1,47 +1,61 @@
 using System;
 
-namespace AST{
+namespace AST
+{
 
-public abstract class Stmt{
-public interface Visitor<R> {
-R visitExpressionStmt(Expression stmt);
-R visitPrintStmt(Print stmt);
-R visitVarStmt(Var stmt);
-}
-public class Expression: Stmt{
-public Expression( Expr expression ){
-this.expression = expression;
-}
+  public abstract class Stmt
+  {
+    public interface Visitor<R>
+    {
+      R VisitExpressionStmt(Expression stmt);
+      R VisitPrintStmt(Print stmt);
+      R VisitVarStmt(Var stmt);
+    }
+    public class Expression : Stmt
+    {
+      public Expression(Expr expression)
+      {
+        this.expression = expression;
+      }
 
-public override R Accept<R>(Visitor<R> visitor){
-return visitor.visitExpressionStmt(this);
-}
+      public override R Accept<R>(Visitor<R> visitor)
+      {
+        return visitor.VisitExpressionStmt(this);
+      }
 
-public readonly Expr expression;
-}
-public class Print: Stmt{
-public Print( Expr expression ){
-this.expression = expression;
-}
+      public readonly Expr expression;
+    }
+    public class Print : Stmt
+    {
+      public Print(Expr expression)
+      {
+        this.expression = expression;
+      }
 
-public override R Accept<R>(Visitor<R> visitor){
-return visitor.visitPrintStmt(this);
-}
+      public override R Accept<R>(Visitor<R> visitor)
+      {
+        return visitor.VisitPrintStmt(this);
+      }
 
-public readonly Expr expression;
-}
-public class Var: Stmt{
-public Var( Token name ){
-this.name = name;
-}
+      public readonly Expr expression;
+    }
+    public class Var : Stmt
+    {
+      public Var(Token name, Expr initializer)
+      {
+        this.name = name;
+        this.initializer = initializer;
+      }
 
-public override R Accept<R>(Visitor<R> visitor){
-return visitor.visitVarStmt(this);
-}
+      public override R Accept<R>(Visitor<R> visitor)
+      {
+        return visitor.VisitVarStmt(this);
+      }
 
-public readonly Token name;
-}
+      public readonly Token name;
+      public readonly Expr initializer;
+    }
 
-public abstract R Accept<R>(Visitor<R> visitor);
-}
+    public abstract R Accept<R>(Visitor<R> visitor);
+  }
 }
