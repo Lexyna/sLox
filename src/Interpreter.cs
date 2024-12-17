@@ -134,6 +134,13 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
     return null;
   }
 
+  public Object VisitAssignExpr(Expr.Assign expr)
+  {
+    Object value = Evaluate(expr.value);
+    environment.Assign(expr.name, value);
+    return value;
+  }
+
   private bool IsTruthy(Object obj)
   {
     if (obj == null) return false;

@@ -35,6 +35,11 @@ public class AstPrinter : Expr.Visitor<String>
     return expr.name.ToString();
   }
 
+  public string VisitAssignExpr(Expr.Assign expr)
+  {
+    return expr.name.ToString() + " : " + expr.value;
+  }
+
   private string Parenthesize(string name, params Expr[] exprs)
   {
     var builder = new StringBuilder();

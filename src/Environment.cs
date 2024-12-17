@@ -11,7 +11,18 @@ public class Environment
     throw new RuntimeError(name, $"Undefined variable + '{name.lexeme}'.");
   }
 
+  public void Assign(Token name, Object value)
+  {
+    if (values.ContainsKey(name.lexeme))
+    {
+      values[name.lexeme] = value;
+      return;
+    }
+    throw new RuntimeError(name, $"undefined variable '{name.lexeme}'.");
+  }
+
   public void Define(string name, Object value)
+
   {
     values[name] = value;
   }

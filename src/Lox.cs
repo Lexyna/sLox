@@ -14,6 +14,9 @@ public class Lox
 
   public static void Main(string[] args)
   {
+    //GenerateAST.Generate("AST");
+    //return;
+
     if (args.Length > 1)
     {
       Console.WriteLine("Usage: sLox [script]");
