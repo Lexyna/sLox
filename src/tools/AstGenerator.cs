@@ -3,19 +3,20 @@ namespace tools
 
   public class GenerateAST
   {
-
     public static void Generate(string outputDir)
     {
-      /*DefineAST(outputDir, "Expr", new List<string>(){
+      DefineAST(outputDir, "Expr", new List<string>(){
         "Binary : Expr left, Token op, Expr right",
         "Grouping : Expr expression",
         "Literal : Object value",
-        "Unary : Token op, Expr right"
-      });*/
+        "Unary : Token op, Expr right",
+        "Variable : Token name"
+        });
       DefineAST(outputDir, "Stmt", new List<string>()
       {
         "Expression : Expr expression",
-        "Print : Expr expression"
+        "Print : Expr expression",
+        "Var  : Token name"
       });
     }
 
