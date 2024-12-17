@@ -112,6 +112,28 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
     stmt.Accept(this);
   }
 
+  private void ExecuteBlock(List<Stmt> statements, Environment environment)
+  {
+    Environment previous = this.environment;
+    try
+    {
+      this.environment = environment;
+
+      foreach (Stmt statement in statements)
+        Execute(statement);
+    }
+    finally
+    {
+      this.environment = previous;
+    }
+  }
+
+  public Object VisitBlockStmt(Stmt.Block stmt)
+  {
+    ExecuteBlock(stmt.statements, new Environment(environment));
+    return null;
+  }
+
   public Object VisitExpressionStmt(Stmt.Expression stmt)
   {
     Evaluate(stmt.expression);
