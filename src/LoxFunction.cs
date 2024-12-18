@@ -4,10 +4,12 @@ using AST;
 public class LoxFunction : LoxCallable
 {
   private readonly Stmt.Function declaration;
+  private readonly Environment closure;
 
-  public LoxFunction(Stmt.Function declaration)
+  public LoxFunction(Stmt.Function declaration, Environment closure)
   {
     this.declaration = declaration;
+    this.closure = closure;
   }
 
   public int Arity()
@@ -17,7 +19,7 @@ public class LoxFunction : LoxCallable
 
   public object Call(Interpreter interpreter, List<object> arguments)
   {
-    Environment environment = new Environment(interpreter.globals);
+    Environment environment = new Environment(closure);
     for (int i = 0; i < declaration.param.Count; i++)
       environment.Define(declaration.param[i].lexeme, arguments[i]);
 
