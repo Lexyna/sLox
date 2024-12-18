@@ -5,6 +5,8 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
 
   private Environment environment = new Environment();
 
+  private Object uninitialized = new Object();
+
   public void Interpret(List<Stmt> statments, bool repl = false)
   {
     try
@@ -49,7 +51,10 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
 
   public Object VisitVariableExpr(Expr.Variable expr)
   {
-    return environment.Get(expr.name);
+    Object value = environment.Get(expr.name);
+    if (value == uninitialized)
+      throw new RuntimeError(expr.name, $"Variable must first be initialized");
+    return value;
   }
 
   public Object VisitBinaryExpr(Expr.Binary expr)
@@ -156,7 +161,7 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
 
   public Object VisitVarStmt(Stmt.Var stmt)
   {
-    Object value = null;
+    Object value = uninitialized;
     if (stmt.initializer != null)
       value = Evaluate(stmt.initializer);
     environment.Define(stmt.name.lexeme, value);
