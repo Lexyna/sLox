@@ -5,7 +5,15 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
 
   private class BreakException : Exception { }
 
-  private Environment environment = new Environment();
+  public readonly Environment globals = new Environment();
+  private Environment environment;
+
+  public Interpreter()
+  {
+    globals.Define("clock", new Clock());
+
+    environment = globals;
+  }
 
   private Object uninitialized = new Object();
 
@@ -124,6 +132,26 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
     return null;
   }
 
+  public Object VisitCallExpr(Expr.Call expr)
+  {
+    Object callee = Evaluate(expr.calle);
+
+    List<Object> arguments = new List<Object>();
+    foreach (Expr argument in expr.arguments)
+      arguments.Add(Evaluate(argument));
+
+    if (!(callee is LoxCallable))
+      throw new RuntimeError(expr.paren, "Can only call functions and classes.");
+
+    LoxCallable function = callee as LoxCallable;
+    if (arguments.Count != function.Arity())
+      throw new RuntimeError(expr.paren, $"Expected {function.Arity()} arguments but got {arguments.Count}.");
+
+
+    return function.Call(this, arguments);
+
+  }
+
   private bool IsEqual(Object a, Object b)
   {
     if (a == null && b == null) return true;
@@ -142,7 +170,7 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
     stmt.Accept(this);
   }
 
-  private void ExecuteBlock(List<Stmt> statements, Environment environment)
+  public void ExecuteBlock(List<Stmt> statements, Environment environment)
   {
     Environment previous = this.environment;
     try
@@ -173,6 +201,13 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
   {
     Evaluate(stmt.expression);
     return typeof(void);
+  }
+
+  public Object VisitFunctionStmt(Stmt.Function stmt)
+  {
+    LoxFunction function = new LoxFunction(stmt);
+    environment.Define(stmt.name.lexeme, function);
+    return null;
   }
 
   public Object VisitIfStmt(Stmt.If stmt)

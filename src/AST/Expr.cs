@@ -9,6 +9,7 @@ namespace AST
     {
       R VisitAssignExpr(Assign expr);
       R VisitBinaryExpr(Binary expr);
+      R VisitCallExpr(Call expr);
       R VisitGroupingExpr(Grouping expr);
       R VisitLiteralExpr(Literal expr);
       R VisitLogicalExpr(Logical expr);
@@ -48,6 +49,24 @@ namespace AST
       public readonly Expr left;
       public readonly Token op;
       public readonly Expr right;
+    }
+    public class Call : Expr
+    {
+      public Call(Expr calle, Token paren, List<Expr> arguments)
+      {
+        this.calle = calle;
+        this.paren = paren;
+        this.arguments = arguments;
+      }
+
+      public override R Accept<R>(Visitor<R> visitor)
+      {
+        return visitor.VisitCallExpr(this);
+      }
+
+      public readonly Expr calle;
+      public readonly Token paren;
+      public readonly List<Expr> arguments;
     }
     public class Grouping : Expr
     {

@@ -46,6 +46,11 @@ public class AstPrinter : Expr.Visitor<String>
     return expr.name.ToString() + " : " + expr.value;
   }
 
+  public string VisitCallExpr(Expr.Call expr)
+  {
+    return $"{expr.calle} ({expr.arguments})";
+  }
+
   private string Parenthesize(string name, params Expr[] exprs)
   {
     var builder = new StringBuilder();

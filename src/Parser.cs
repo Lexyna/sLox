@@ -35,6 +35,7 @@ public class Parser
   {
     try
     {
+      if (Match(TokenType.FUN)) return Function("function");
       if (Match(TokenType.VAR)) return VarDeclaration();
 
       return Statement();
@@ -143,6 +144,28 @@ public class Parser
     Expr expr = Expression();
     Consume(TokenType.SEMICOLON, "Expected ';' after expression.");
     return new Stmt.Expression(expr);
+  }
+
+  private Stmt.Function Function(string kind)
+  {
+    Token name = Consume(TokenType.IDENTIFIER, $"Expected {kind} name.");
+
+    Consume(TokenType.LEFT_PAREM, $"Expected ')' after {kind} name.");
+    List<Token> parameters = new List<Token>();
+    if (!Check(TokenType.RIGHT_PAREN))
+    {
+      do
+      {
+        if (parameters.Count >= 255) Error(Peek(), "Can't have more than 255 parameters.");
+        parameters.Add(Consume(TokenType.IDENTIFIER, "Expected parameter name."));
+      } while (Match(TokenType.COMMA));
+    }
+
+    Consume(TokenType.RIGHT_PAREN, "Expected ')' after parameters.");
+
+    Consume(TokenType.LEFT_BRACE, "Expected '{' before" + kind + " body.");
+    List<Stmt> body = Block();
+    return new Stmt.Function(name, parameters, body);
   }
 
   private List<Stmt> Block()
@@ -306,7 +329,38 @@ public class Parser
       return new Expr.Unary(op, right);
     }
 
-    return Primary();
+    return Call();
+  }
+
+  private Expr FinishCall(Expr callee)
+  {
+    List<Expr> arguments = new List<Expr>();
+    if (!Check(TokenType.RIGHT_PAREN))
+    {
+      do
+      {
+        if (arguments.Count >= 255)
+          Error(Peek(), "Can't have more than 255 arguments.");
+        arguments.Add(Expression());
+      } while (Match(TokenType.COMMA));
+    }
+
+    Token paren = Consume(TokenType.RIGHT_PAREN, "Expected ')' after arguments.");
+    return new Expr.Call(callee, paren, arguments);
+  }
+
+  private Expr Call()
+  {
+    Expr expr = Primary();
+
+    while (true)
+    {
+      if (Match(TokenType.LEFT_PAREM))
+        expr = FinishCall(expr);
+      else
+        break;
+    }
+    return expr;
   }
 
   private Expr Primary()

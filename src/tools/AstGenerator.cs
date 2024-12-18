@@ -8,6 +8,7 @@ namespace tools
       DefineAST(outputDir, "Expr", new List<string>(){
         "Assign : Token name, Expr value",
         "Binary : Expr left, Token op, Expr right",
+        "Call : Expr calle, Token paren, List<Expr> arguments",
         "Grouping : Expr expression",
         "Literal : Object value",
         "Logical : Expr left, Token op, Expr right",
@@ -19,6 +20,7 @@ namespace tools
         "Block : List<Stmt> statements",
         "Break : ",
         "Expression : Expr expression",
+        "Function : Token name, List<Token> param, List<Stmt> body",
         "If : Expr condition, Stmt thenBranch, Stmt elseBranch",
         "Print : Expr expression",
         "Var  : Token name, Expr initializer",

@@ -10,6 +10,7 @@ namespace AST
       R VisitBlockStmt(Block stmt);
       R VisitBreakStmt(Break stmt);
       R VisitExpressionStmt(Expression stmt);
+      R VisitFunctionStmt(Function stmt);
       R VisitIfStmt(If stmt);
       R VisitPrintStmt(Print stmt);
       R VisitVarStmt(Var stmt);
@@ -54,6 +55,24 @@ namespace AST
       }
 
       public readonly Expr expression;
+    }
+    public class Function : Stmt
+    {
+      public Function(Token name, List<Token> param, List<Stmt> body)
+      {
+        this.name = name;
+        this.param = param;
+        this.body = body;
+      }
+
+      public override R Accept<R>(Visitor<R> visitor)
+      {
+        return visitor.VisitFunctionStmt(this);
+      }
+
+      public readonly Token name;
+      public readonly List<Token> param;
+      public readonly List<Stmt> body;
     }
     public class If : Stmt
     {
