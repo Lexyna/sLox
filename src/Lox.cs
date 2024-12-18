@@ -49,12 +49,12 @@ public class Lox
       Console.Write("> ");
       string? line = input.ReadLine();
       if (String.IsNullOrEmpty(line)) break;
-      Run(line);
+      Run(line, true);
       if (hadError) hadError = false;
     }
   }
 
-  private static void Run(string source)
+  private static void Run(string source, bool repl = false)
   {
     Scanner scanner = new Scanner(source);
     List<Token> tokens = scanner.ScanTokens();
@@ -64,8 +64,8 @@ public class Lox
 
     if (hadError) return;
 
-    interpreter.Interpret(statements);
-    //Console.WriteLine(new AstPrinter().Print(expression));
+    interpreter.Interpret(statements, repl);
+    //Console.WriteLine(new AstPrinter().Print(statements[0]));
   }
 
   public static void Error(int line, string message)

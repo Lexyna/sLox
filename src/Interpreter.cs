@@ -5,10 +5,17 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
 
   private Environment environment = new Environment();
 
-  public void Interpret(List<Stmt> statments)
+  public void Interpret(List<Stmt> statments, bool repl = false)
   {
     try
     {
+      if (repl && statments.Count == 1 && statments[0] is Stmt.Expression)
+      {
+        Object value = Evaluate(((Stmt.Expression)statments[0]).expression);
+        Console.WriteLine(value);
+        return;
+      }
+
       foreach (var statment in statments)
         Execute(statment);
     }
