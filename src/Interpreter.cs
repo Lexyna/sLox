@@ -3,6 +3,8 @@ using AST;
 public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
 {
 
+  private class BreakException : Exception { }
+
   private Environment environment = new Environment();
 
   private Object uninitialized = new Object();
@@ -162,6 +164,11 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
     return null;
   }
 
+  public Object VisitBreakStmt(Stmt.Break stmt)
+  {
+    throw new BreakException();
+  }
+
   public Object VisitExpressionStmt(Stmt.Expression stmt)
   {
     Evaluate(stmt.expression);
@@ -170,7 +177,7 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
 
   public Object VisitIfStmt(Stmt.If stmt)
   {
-    if (IsTruthy(stmt.condition))
+    if (IsTruthy(Evaluate(stmt.condition)))
       Execute(stmt.thenBranch);
     else if (stmt.elseBranch != null)
       Execute(stmt.elseBranch);
@@ -195,8 +202,13 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
 
   public Object VisitWhileStmt(Stmt.While stmt)
   {
-    while (IsTruthy(Evaluate(stmt.condition)))
-      Execute(stmt.body);
+    try
+    {
+      while (IsTruthy(Evaluate(stmt.condition)))
+        Execute(stmt.body);
+    }
+    catch (BreakException ex) { }
+
     return null;
   }
 

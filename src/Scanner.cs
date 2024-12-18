@@ -5,6 +5,7 @@ public class Scanner
 
   private static readonly Dictionary<String, TokenType> keywords = new Dictionary<string, TokenType>(){
     {"and", TokenType.AND },
+    {"break", TokenType.BREAK},
     {"or", TokenType.OR},
     {"if", TokenType.IF},
     {"else", TokenType.ELSE},

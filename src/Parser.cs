@@ -1,4 +1,5 @@
 using System.Data;
+using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.ConstrainedExecution;
 using AST;
@@ -13,6 +14,7 @@ public class Parser
 
   List<Token> tokens;
   int current = 0;
+  int loopDepth = 0;
 
   public Parser(List<Token> tokens)
   {
@@ -46,12 +48,22 @@ public class Parser
 
   private Stmt Statement()
   {
+    if (Match(TokenType.BREAK)) return BreakStatement();
     if (Match(TokenType.FOR)) return ForStatement();
     if (Match(TokenType.IF)) return IfStatement();
     if (Match(TokenType.PRINT)) return PrintStatement();
     if (Match(TokenType.WHILE)) return WhileStatement();
     if (Match(TokenType.LEFT_BRACE)) return new Stmt.Block(Block());
     return ExpressionStatement();
+  }
+
+  private Stmt BreakStatement()
+  {
+    if (loopDepth == 0)
+      Error(Previous(), "Must be inside a loop to use 'break'.");
+
+    Consume(TokenType.SEMICOLON, "Expected ';' after 'break'.");
+    return new Stmt.Break();
   }
 
   private Stmt ForStatement()
@@ -77,24 +89,31 @@ public class Parser
 
     Consume(TokenType.RIGHT_PAREN, "Expected ')' after clause.");
 
-    Stmt body = Statement();
-
-    if (increment != null)
+    try
     {
-      body = new Stmt.Block(new List<Stmt>(){
+      loopDepth++;
+      Stmt body = Statement();
+
+      if (increment != null)
+      {
+        body = new Stmt.Block(new List<Stmt>(){
         body,
         new Stmt.Expression(increment)
       });
+      }
+
+      if (condition == null) condition = new Expr.Literal(true);
+      body = new Stmt.While(condition, body);
+
+      if (initializer != null)
+        body = new Stmt.Block(new List<Stmt>() { initializer, body });
+
+      return body;
     }
-
-    if (condition == null) condition = new Expr.Literal(true);
-    body = new Stmt.While(condition, body);
-
-    if (initializer != null)
-      body = new Stmt.Block(new List<Stmt>() { initializer, body });
-
-    return body;
-
+    finally
+    {
+      loopDepth--;
+    }
   }
 
   private Stmt IfStatement()
@@ -209,9 +228,17 @@ public class Parser
     Consume(TokenType.LEFT_PAREM, "Expected '(' after 'while'.");
     Expr condition = Expression();
     Consume(TokenType.RIGHT_PAREN, "Expected ')' after condition.");
-    Stmt body = Statement();
 
-    return new Stmt.While(condition, body);
+    try
+    {
+      loopDepth++;
+      Stmt body = Statement();
+      return new Stmt.While(condition, body);
+    }
+    finally
+    {
+      loopDepth--;
+    }
   }
 
   private Expr Equality()

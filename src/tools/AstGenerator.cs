@@ -17,6 +17,7 @@ namespace tools
       DefineAST(outputDir, "Stmt", new List<string>()
       {
         "Block : List<Stmt> statements",
+        "Break : ",
         "Expression : Expr expression",
         "If : Expr condition, Stmt thenBranch, Stmt elseBranch",
         "Print : Expr expression",
@@ -65,7 +66,12 @@ namespace tools
       //constructor
       writer.WriteLine($"public {className}( {fieldList} ){{");
 
-      string[] fields = fieldList.Split(", ");
+      string[] fields;
+      if (String.IsNullOrEmpty(fieldList))
+        fields = new String[0];
+      else
+        fields = fieldList.Split(", ");
+
       foreach (string field in fields)
       {
         string name = field.Split(" ")[1];
