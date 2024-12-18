@@ -1,112 +1,107 @@
 using System;
 
-namespace AST
-{
+namespace AST{
 
-  public abstract class Expr
-  {
-    public interface Visitor<R>
-    {
-      R VisitAssignExpr(Assign expr);
-      R VisitBinaryExpr(Binary expr);
-      R VisitGroupingExpr(Grouping expr);
-      R VisitLiteralExpr(Literal expr);
-      R VisitUnaryExpr(Unary expr);
-      R VisitVariableExpr(Variable expr);
-    }
-    public class Assign : Expr
-    {
-      public Assign(Token name, Expr value)
-      {
-        this.name = name;
-        this.value = value;
-      }
+public abstract class Expr{
+public interface Visitor<R> {
+R VisitAssignExpr(Assign expr);
+R VisitBinaryExpr(Binary expr);
+R VisitGroupingExpr(Grouping expr);
+R VisitLiteralExpr(Literal expr);
+R VisitLogicalExpr(Logical expr);
+R VisitUnaryExpr(Unary expr);
+R VisitVariableExpr(Variable expr);
+}
+public class Assign: Expr{
+public Assign( Token name, Expr value ){
+this.name = name;
+this.value = value;
+}
 
-      public override R Accept<R>(Visitor<R> visitor)
-      {
-        return visitor.VisitAssignExpr(this);
-      }
+public override R Accept<R>(Visitor<R> visitor){
+return visitor.VisitAssignExpr(this);
+}
 
-      public readonly Token name;
-      public readonly Expr value;
-    }
-    public class Binary : Expr
-    {
-      public Binary(Expr left, Token op, Expr right)
-      {
-        this.left = left;
-        this.op = op;
-        this.right = right;
-      }
+public readonly Token name;
+public readonly Expr value;
+}
+public class Binary: Expr{
+public Binary( Expr left, Token op, Expr right ){
+this.left = left;
+this.op = op;
+this.right = right;
+}
 
-      public override R Accept<R>(Visitor<R> visitor)
-      {
-        return visitor.VisitBinaryExpr(this);
-      }
+public override R Accept<R>(Visitor<R> visitor){
+return visitor.VisitBinaryExpr(this);
+}
 
-      public readonly Expr left;
-      public readonly Token op;
-      public readonly Expr right;
-    }
-    public class Grouping : Expr
-    {
-      public Grouping(Expr expression)
-      {
-        this.expression = expression;
-      }
+public readonly Expr left;
+public readonly Token op;
+public readonly Expr right;
+}
+public class Grouping: Expr{
+public Grouping( Expr expression ){
+this.expression = expression;
+}
 
-      public override R Accept<R>(Visitor<R> visitor)
-      {
-        return visitor.VisitGroupingExpr(this);
-      }
+public override R Accept<R>(Visitor<R> visitor){
+return visitor.VisitGroupingExpr(this);
+}
 
-      public readonly Expr expression;
-    }
-    public class Literal : Expr
-    {
-      public Literal(Object value)
-      {
-        this.value = value;
-      }
+public readonly Expr expression;
+}
+public class Literal: Expr{
+public Literal( Object value ){
+this.value = value;
+}
 
-      public override R Accept<R>(Visitor<R> visitor)
-      {
-        return visitor.VisitLiteralExpr(this);
-      }
+public override R Accept<R>(Visitor<R> visitor){
+return visitor.VisitLiteralExpr(this);
+}
 
-      public readonly Object value;
-    }
-    public class Unary : Expr
-    {
-      public Unary(Token op, Expr right)
-      {
-        this.op = op;
-        this.right = right;
-      }
+public readonly Object value;
+}
+public class Logical: Expr{
+public Logical( Expr left, Token op, Expr right ){
+this.left = left;
+this.op = op;
+this.right = right;
+}
 
-      public override R Accept<R>(Visitor<R> visitor)
-      {
-        return visitor.VisitUnaryExpr(this);
-      }
+public override R Accept<R>(Visitor<R> visitor){
+return visitor.VisitLogicalExpr(this);
+}
 
-      public readonly Token op;
-      public readonly Expr right;
-    }
-    public class Variable : Expr
-    {
-      public Variable(Token name)
-      {
-        this.name = name;
-      }
+public readonly Expr left;
+public readonly Token op;
+public readonly Expr right;
+}
+public class Unary: Expr{
+public Unary( Token op, Expr right ){
+this.op = op;
+this.right = right;
+}
 
-      public override R Accept<R>(Visitor<R> visitor)
-      {
-        return visitor.VisitVariableExpr(this);
-      }
+public override R Accept<R>(Visitor<R> visitor){
+return visitor.VisitUnaryExpr(this);
+}
 
-      public readonly Token name;
-    }
+public readonly Token op;
+public readonly Expr right;
+}
+public class Variable: Expr{
+public Variable( Token name ){
+this.name = name;
+}
 
-    public abstract R Accept<R>(Visitor<R> visitor);
-  }
+public override R Accept<R>(Visitor<R> visitor){
+return visitor.VisitVariableExpr(this);
+}
+
+public readonly Token name;
+}
+
+public abstract R Accept<R>(Visitor<R> visitor);
+}
 }

@@ -1,4 +1,5 @@
 using System.Data;
+using System.Numerics;
 using System.Runtime.ConstrainedExecution;
 using AST;
 
@@ -45,10 +46,27 @@ public class Parser
 
   private Stmt Statement()
   {
+    if (Match(TokenType.IF)) return IfStatement();
     if (Match(TokenType.PRINT)) return PrintStatement();
+    if (Match(TokenType.WHILE)) return WhileStatement();
     if (Match(TokenType.LEFT_BRACE)) return new Stmt.Block(Block());
     return ExpressionStatement();
   }
+
+  private Stmt IfStatement()
+  {
+    Consume(TokenType.LEFT_PAREM, "Expected '()' after 'if'.");
+    Expr condition = Expression();
+    Consume(TokenType.RIGHT_PAREN, "Expected '(' after if condition.");
+
+    Stmt thenBranch = Statement();
+    Stmt elseBranch = null;
+    if (Match(TokenType.ELSE))
+      elseBranch = Statement();
+
+    return new Stmt.If(condition, thenBranch, elseBranch);
+  }
+
 
   private Stmt PrintStatement()
   {
@@ -79,7 +97,7 @@ public class Parser
 
   private Expr Assignment()
   {
-    Expr expr = Equality();
+    Expr expr = Or();
 
     if (Match(TokenType.EQ))
     {
@@ -94,6 +112,34 @@ public class Parser
 
       Error(equals, "Invalid assignment target.");
     }
+    return expr;
+  }
+
+  private Expr Or()
+  {
+    Expr expr = And();
+
+    while (Match(TokenType.OR))
+    {
+      Token op = Previous();
+      Expr right = And();
+      expr = new Expr.Logical(expr, op, right);
+    }
+
+    return expr;
+  }
+
+  private Expr And()
+  {
+    Expr expr = Equality();
+
+    while (Match(TokenType.AND))
+    {
+      Token op = Previous();
+      Expr right = Equality();
+      expr = new Expr.Logical(expr, op, right);
+    }
+
     return expr;
   }
 
@@ -112,6 +158,16 @@ public class Parser
 
     Consume(TokenType.SEMICOLON, "Expected `;` after variable declaration");
     return new Stmt.Var(name, initializer);
+  }
+
+  private Stmt WhileStatement()
+  {
+    Consume(TokenType.LEFT_PAREM, "Expected '(' after 'while'.");
+    Expr condition = Expression();
+    Consume(TokenType.RIGHT_PAREN, "Expected ')' after condition.");
+    Stmt body = Statement();
+
+    return new Stmt.While(condition, body);
   }
 
   private Expr Equality()
