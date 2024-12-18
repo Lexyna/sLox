@@ -35,7 +35,11 @@ public class Parser
   {
     try
     {
-      if (Match(TokenType.FUN)) return Function("function");
+      if (Check(TokenType.FUN) && CheckNext(TokenType.IDENTIFIER))
+      {
+        Consume(TokenType.FUN, null);
+        return Function("function");
+      }
       if (Match(TokenType.VAR)) return VarDeclaration();
 
       return Statement();
@@ -160,7 +164,11 @@ public class Parser
   private Stmt.Function Function(string kind)
   {
     Token name = Consume(TokenType.IDENTIFIER, $"Expected {kind} name.");
+    return new Stmt.Function(name, FunctionBody(kind));
+  }
 
+  private Expr.Function FunctionBody(string kind)
+  {
     Consume(TokenType.LEFT_PAREM, $"Expected ')' after {kind} name.");
     List<Token> parameters = new List<Token>();
     if (!Check(TokenType.RIGHT_PAREN))
@@ -176,7 +184,8 @@ public class Parser
 
     Consume(TokenType.LEFT_BRACE, "Expected '{' before" + kind + " body.");
     List<Stmt> body = Block();
-    return new Stmt.Function(name, parameters, body);
+    return new Expr.Function(parameters, body);
+
   }
 
   private List<Stmt> Block()
@@ -376,6 +385,7 @@ public class Parser
 
   private Expr Primary()
   {
+    if (Match(TokenType.FUN)) return FunctionBody("function");
     if (Match(TokenType.FALSE)) return new Expr.Literal(false);
     if (Match(TokenType.TRUE)) return new Expr.Literal(true);
     if (Match(TokenType.NIL)) return new Expr.Literal(null);
@@ -450,6 +460,13 @@ public class Parser
   {
     if (IsAtEnd()) return false;
     return Peek().type == type;
+  }
+
+  private bool CheckNext(TokenType type)
+  {
+    if (IsAtEnd()) return false;
+    if (tokens[current].type == TokenType.EOF) return false;
+    return tokens[current + 1].type == type;
   }
 
   private Token Advance()

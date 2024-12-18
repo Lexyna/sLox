@@ -7,6 +7,7 @@ namespace AST
   {
     public interface Visitor<R>
     {
+      R VisitFunctionExpr(Function expr);
       R VisitAssignExpr(Assign expr);
       R VisitBinaryExpr(Binary expr);
       R VisitCallExpr(Call expr);
@@ -15,6 +16,22 @@ namespace AST
       R VisitLogicalExpr(Logical expr);
       R VisitUnaryExpr(Unary expr);
       R VisitVariableExpr(Variable expr);
+    }
+    public class Function : Expr
+    {
+      public Function(List<Token> parameters, List<Stmt> body)
+      {
+        this.parameters = parameters;
+        this.body = body;
+      }
+
+      public override R Accept<R>(Visitor<R> visitor)
+      {
+        return visitor.VisitFunctionExpr(this);
+      }
+
+      public readonly List<Token> parameters;
+      public readonly List<Stmt> body;
     }
     public class Assign : Expr
     {

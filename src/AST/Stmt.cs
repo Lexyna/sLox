@@ -59,11 +59,10 @@ namespace AST
     }
     public class Function : Stmt
     {
-      public Function(Token name, List<Token> param, List<Stmt> body)
+      public Function(Token name, Expr.Function function)
       {
         this.name = name;
-        this.param = param;
-        this.body = body;
+        this.function = function;
       }
 
       public override R Accept<R>(Visitor<R> visitor)
@@ -72,8 +71,7 @@ namespace AST
       }
 
       public readonly Token name;
-      public readonly List<Token> param;
-      public readonly List<Stmt> body;
+      public readonly Expr.Function function;
     }
     public class If : Stmt
     {

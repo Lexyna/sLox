@@ -3,25 +3,27 @@ using AST;
 
 public class LoxFunction : LoxCallable
 {
-  private readonly Stmt.Function declaration;
+  private readonly string name;
+  private readonly Expr.Function declaration;
   private readonly Environment closure;
 
-  public LoxFunction(Stmt.Function declaration, Environment closure)
+  public LoxFunction(string name, Expr.Function declaration, Environment closure)
   {
+    this.name = name;
     this.declaration = declaration;
     this.closure = closure;
   }
 
   public int Arity()
   {
-    return declaration.param.Count;
+    return declaration.parameters.Count;
   }
 
   public object Call(Interpreter interpreter, List<object> arguments)
   {
     Environment environment = new Environment(closure);
-    for (int i = 0; i < declaration.param.Count; i++)
-      environment.Define(declaration.param[i].lexeme, arguments[i]);
+    for (int i = 0; i < declaration.parameters.Count; i++)
+      environment.Define(declaration.parameters[i].lexeme, arguments[i]);
 
     try
     {
@@ -37,6 +39,7 @@ public class LoxFunction : LoxCallable
 
   public override string ToString()
   {
-    return $"<fn {declaration.name.lexeme}>";
+    if (String.IsNullOrEmpty(name)) return "<fn>";
+    return $"<fn {name}>";
   }
 }
