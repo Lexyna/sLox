@@ -20,7 +20,16 @@ public class LoxFunction : LoxCallable
     Environment environment = new Environment(interpreter.globals);
     for (int i = 0; i < declaration.param.Count; i++)
       environment.Define(declaration.param[i].lexeme, arguments[i]);
-    interpreter.ExecuteBlock(declaration.body, environment);
+
+    try
+    {
+      interpreter.ExecuteBlock(declaration.body, environment);
+    }
+    catch (Return returnValue)
+    {
+      return returnValue.value;
+    }
+
     return null;
   }
 

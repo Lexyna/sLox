@@ -226,6 +226,13 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
     return typeof(void);
   }
 
+  public Object VisitReturnStmt(Stmt.Return stmt)
+  {
+    Object value = null;
+    if (stmt.value != null) value = Evaluate(stmt.value);
+    throw new Return(value);
+  }
+
   public Object VisitVarStmt(Stmt.Var stmt)
   {
     Object value = uninitialized;
