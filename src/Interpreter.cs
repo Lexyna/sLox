@@ -6,6 +6,7 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
   private class BreakException : Exception { }
 
   public readonly Environment globals = new Environment();
+  private readonly Dictionary<Expr, int> locals = new Dictionary<Expr, int>();
   private Environment environment;
 
   public Interpreter()
@@ -77,10 +78,20 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
 
   public Object VisitVariableExpr(Expr.Variable expr)
   {
-    Object value = environment.Get(expr.name);
+    Object value = LookupVariable(expr.name, expr);
     if (value == uninitialized)
       throw new RuntimeError(expr.name, $"Variable must first be initialized");
     return value;
+  }
+
+  private Object LookupVariable(Token name, Expr expr)
+  {
+    if (locals.ContainsKey(expr))
+    {
+      int distance = locals[expr];
+      return environment.GetAt(distance, name.lexeme);
+    }
+    return globals.Get(name);
   }
 
   public Object VisitBinaryExpr(Expr.Binary expr)
@@ -168,6 +179,11 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
   private void Execute(Stmt stmt)
   {
     stmt.Accept(this);
+  }
+
+  public void Resolve(Expr expr, int depth)
+  {
+    locals[expr] = depth;
   }
 
   public void ExecuteBlock(List<Stmt> statements, Environment environment)
@@ -262,7 +278,11 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
   public Object VisitAssignExpr(Expr.Assign expr)
   {
     Object value = Evaluate(expr.value);
-    environment.Assign(expr.name, value);
+
+    if (locals.ContainsKey(expr))
+      environment.AssignAt(locals[expr], expr.name, value);
+    else
+      globals.Assign(expr.name, value);
     return value;
   }
 

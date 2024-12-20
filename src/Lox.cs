@@ -64,6 +64,11 @@ public class Lox
 
     if (hadError) return;
 
+    Resolver resolver = new Resolver(interpreter);
+    resolver.Resolve(statements);
+
+    if (hadError) return;
+
     interpreter.Interpret(statements, repl);
     //Console.WriteLine(new AstPrinter().Print(statements[0]));
   }
