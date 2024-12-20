@@ -3,8 +3,27 @@ using AST;
 
 public class Resolver : Expr.Visitor<Object>, Stmt.Visitor<Object>
 {
+  internal class Variable
+  {
+    public readonly Token name;
+    internal VariableState state;
+
+    public Variable(Token name, VariableState state)
+    {
+      this.name = name;
+      this.state = state;
+    }
+
+    public enum VariableState
+    {
+      DECLARED,
+      DEFINED,
+      READ
+    }
+  }
+
   private readonly Interpreter interpreter;
-  private readonly Stack<Dictionary<string, bool>> scopes = new Stack<Dictionary<string, bool>>();
+  private readonly Stack<Dictionary<string, Variable>> scopes = new Stack<Dictionary<string, Variable>>();
   private FunctionType currentFunction = FunctionType.NONE;
 
   enum FunctionType
@@ -106,7 +125,7 @@ public class Resolver : Expr.Visitor<Object>, Stmt.Visitor<Object>
   public Object VisitAssignExpr(Expr.Assign expr)
   {
     Resolve(expr.value);
-    ResolveLocal(expr, expr.name);
+    ResolveLocal(expr, expr.name, false);
     return null;
   }
 
@@ -151,11 +170,11 @@ public class Resolver : Expr.Visitor<Object>, Stmt.Visitor<Object>
 
   public Object VisitVariableExpr(Expr.Variable expr)
   {
-    if (scopes.Count > 0 && scopes.Peek()[expr.name.lexeme] == false)
+    if (scopes.Count > 0 &&
+    scopes.Peek()[expr.name.lexeme].state == Variable.VariableState.DECLARED)
       Lox.Error(expr.name, "Can't read local variable in its own initializer.");
 
-    ResolveLocal(expr, expr.name);
-
+    ResolveLocal(expr, expr.name, true);
     return null;
   }
 
@@ -187,36 +206,45 @@ public class Resolver : Expr.Visitor<Object>, Stmt.Visitor<Object>
 
   public void BeginScope()
   {
-    scopes.Push(new Dictionary<string, bool>());
+    scopes.Push(new Dictionary<string, Variable>());
   }
 
   private void EndScope()
   {
-    scopes.Pop();
+    Dictionary<string, Variable> scope = scopes.Pop();
+    foreach (KeyValuePair<string, Variable> pair in scope)
+    {
+      if (pair.Value.state == Variable.VariableState.DEFINED)
+        Lox.Error(pair.Value.name, "Local Variable is never used.");
+    }
   }
 
   private void Declare(Token name)
   {
     if (scopes.Count == 0) return;
-    Dictionary<string, bool> scope = scopes.Peek();
+    Dictionary<string, Variable> scope = scopes.Peek();
     if (scope.ContainsKey(name.lexeme))
       Lox.Error(name, "Variable with same name already in scope.");
-    scope[name.lexeme] = false;
+    scope[name.lexeme] = new Variable(name, Variable.VariableState.DECLARED);
   }
 
   private void Define(Token name)
   {
     if (scopes.Count == 0) return;
-    scopes.Peek()[name.lexeme] = true;
+    scopes.Peek()[name.lexeme] = new Variable(name, Variable.VariableState.DEFINED);
   }
 
-  public void ResolveLocal(Expr expr, Token name)
+  public void ResolveLocal(Expr expr, Token name, bool isRead)
   {
     for (int i = scopes.Count - 1; i >= 0; i--)
     {
       if (scopes.ElementAt(i).ContainsKey(name.lexeme))
       {
         interpreter.Resolve(expr, scopes.Count - 1 - i);
+
+        if (isRead)
+          scopes.ElementAt(i)[name.lexeme].state = Variable.VariableState.READ;
+
         return;
       }
     }
