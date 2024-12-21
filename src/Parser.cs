@@ -35,6 +35,7 @@ public class Parser
   {
     try
     {
+      if (Match(TokenType.CLASS)) return ClassDeclaration();
       if (Check(TokenType.FUN) && CheckNext(TokenType.IDENTIFIER))
       {
         Consume(TokenType.FUN, null);
@@ -49,6 +50,20 @@ public class Parser
       Syncronize();
       return null;
     }
+  }
+
+  private Stmt ClassDeclaration()
+  {
+    Token name = Consume(TokenType.IDENTIFIER, "Expected class name.");
+    Consume(TokenType.LEFT_BRACE, "Expected '{' before class body.");
+
+    List<Stmt.Function> methods = new List<Stmt.Function>();
+    while (!Check(TokenType.RIGHT_BRACE) && !IsAtEnd())
+      methods.Add(Function("method"));
+
+    Consume(TokenType.RIGHT_BRACE, "Expected '}' after class body.");
+
+    return new Stmt.Class(name, methods);
   }
 
   private Stmt Statement()
@@ -215,6 +230,11 @@ public class Parser
         Token name = ((Expr.Variable)expr).name;
         return new Expr.Assign(name, value);
       }
+      else if (expr is Expr.Get)
+      {
+        Expr.Get get = (Expr.Get)expr;
+        return new Expr.Set(get.obj, get.name, value);
+      }
 
       Error(equals, "Invalid assignment target.");
     }
@@ -377,6 +397,11 @@ public class Parser
     {
       if (Match(TokenType.LEFT_PAREM))
         expr = FinishCall(expr);
+      else if (Match(TokenType.DOT))
+      {
+        Token name = Consume(TokenType.IDENTIFIER, "Expected property after '.'.");
+        expr = new Expr.Get(expr, name);
+      }
       else
         break;
     }
@@ -394,6 +419,8 @@ public class Parser
     {
       return new Expr.Literal(Previous().literal);
     }
+
+    if (Match(TokenType.THIS)) return new Expr.This(Previous());
 
     if (Match(TokenType.IDENTIFIER))
     {

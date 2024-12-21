@@ -23,12 +23,13 @@ public class Resolver : Expr.Visitor<Object>, Stmt.Visitor<Object>
   }
 
   private readonly Interpreter interpreter;
-  private readonly Stack<Dictionary<string, Variable>> scopes = new Stack<Dictionary<string, Variable>>();
+  private readonly List<Dictionary<string, Variable>> scopes = new List<Dictionary<string, Variable>>();
   private FunctionType currentFunction = FunctionType.NONE;
 
   enum FunctionType
   {
     NONE,
+    METHOD,
     FUNCTION,
     LAMBDA_FUNCTION
   }
@@ -49,6 +50,26 @@ public class Resolver : Expr.Visitor<Object>, Stmt.Visitor<Object>
     BeginScope();
     Resolve(stmt.statements);
     EndScope();
+    return null;
+  }
+
+  public Object VisitClassStmt(Stmt.Class stmt)
+  {
+    Declare(stmt.name);
+    Define(stmt.name);
+
+    BeginScope();
+    Token thisToken = new Token(TokenType.THIS, "this", "this", -1);
+    scopes[^1].Add("this", new Variable(thisToken, Variable.VariableState.DECLARED));
+
+    foreach (Stmt.Function method in stmt.methods)
+    {
+      FunctionType declaration = FunctionType.METHOD;
+      ResolveFunction(method, declaration);
+    }
+
+    EndScope();
+
     return null;
   }
 
@@ -144,6 +165,12 @@ public class Resolver : Expr.Visitor<Object>, Stmt.Visitor<Object>
     return null;
   }
 
+  public Object VisitGetExpr(Expr.Get expr)
+  {
+    Resolve(expr.obj);
+    return null;
+  }
+
   public Object VisitGroupingExpr(Expr.Grouping expr)
   {
     Resolve(expr.expression);
@@ -162,6 +189,19 @@ public class Resolver : Expr.Visitor<Object>, Stmt.Visitor<Object>
     return null;
   }
 
+  public Object VisitSetExpr(Expr.Set expr)
+  {
+    Resolve(expr.value);
+    Resolve(expr.obj);
+    return null;
+  }
+
+  public Object VisitThisExpr(Expr.This expr)
+  {
+    ResolveLocal(expr, expr.keyword, true);
+    return null;
+  }
+
   public Object VisitUnaryExpr(Expr.Unary expr)
   {
     Resolve(expr.right);
@@ -171,7 +211,8 @@ public class Resolver : Expr.Visitor<Object>, Stmt.Visitor<Object>
   public Object VisitVariableExpr(Expr.Variable expr)
   {
     if (scopes.Count > 0 &&
-    scopes.Peek()[expr.name.lexeme].state == Variable.VariableState.DECLARED)
+      scopes[^1].ContainsKey(expr.name.lexeme) &&
+      scopes[^1][expr.name.lexeme].state == Variable.VariableState.DECLARED)
       Lox.Error(expr.name, "Can't read local variable in its own initializer.");
 
     ResolveLocal(expr, expr.name, true);
@@ -206,15 +247,14 @@ public class Resolver : Expr.Visitor<Object>, Stmt.Visitor<Object>
 
   public void BeginScope()
   {
-    scopes.Push(new Dictionary<string, Variable>());
+    scopes.Add(new Dictionary<string, Variable>());
   }
 
   private void EndScope()
   {
-    Dictionary<string, Variable> scope = scopes.Pop();
-    foreach (KeyValuePair<string, Variable> pair in scope)
+    foreach (var pair in scopes[^1])
     {
-      if (pair.Value.state == Variable.VariableState.DEFINED)
+      if (pair.Value.state != Variable.VariableState.READ)
         Lox.Error(pair.Value.name, "Local Variable is never used.");
     }
   }
@@ -222,7 +262,7 @@ public class Resolver : Expr.Visitor<Object>, Stmt.Visitor<Object>
   private void Declare(Token name)
   {
     if (scopes.Count == 0) return;
-    Dictionary<string, Variable> scope = scopes.Peek();
+    Dictionary<string, Variable> scope = scopes[^1];
     if (scope.ContainsKey(name.lexeme))
       Lox.Error(name, "Variable with same name already in scope.");
     scope[name.lexeme] = new Variable(name, Variable.VariableState.DECLARED);
@@ -231,7 +271,7 @@ public class Resolver : Expr.Visitor<Object>, Stmt.Visitor<Object>
   private void Define(Token name)
   {
     if (scopes.Count == 0) return;
-    scopes.Peek()[name.lexeme] = new Variable(name, Variable.VariableState.DEFINED);
+    scopes[^1][name.lexeme] = new Variable(name, Variable.VariableState.DEFINED);
   }
 
   public void ResolveLocal(Expr expr, Token name, bool isRead)

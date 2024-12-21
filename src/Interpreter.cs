@@ -2,7 +2,6 @@ using System.Runtime.CompilerServices;
 using AST;
 public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
 {
-
   private class BreakException : Exception { }
 
   public readonly Environment globals = new Environment();
@@ -57,6 +56,23 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
     }
 
     return Evaluate(expr.right);
+  }
+
+  public Object VisitSetExpr(Expr.Set expr)
+  {
+    Object obj = Evaluate(expr.obj);
+
+    if (!(obj is LoxInstance))
+      throw new RuntimeError(expr.name, "Only instances can have fields.");
+
+    Object value = Evaluate(expr.value);
+    ((LoxInstance)obj).Set(expr.name, value);
+    return value;
+  }
+
+  public Object VisitThisExpr(Expr.This expr)
+  {
+    return LookupVariable(expr.keyword, expr);
   }
 
   public Object VisitGroupingExpr(Expr.Grouping expr)
@@ -160,7 +176,14 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
 
 
     return function.Call(this, arguments);
+  }
 
+  public Object VisitGetExpr(Expr.Get expr)
+  {
+    Object obj = Evaluate(expr.obj);
+    if (obj is LoxInstance)
+      return ((LoxInstance)obj).Get(expr.name);
+    throw new RuntimeError(expr.name, "Only instances have properties.");
   }
 
   private bool IsEqual(Object a, Object b)
@@ -205,6 +228,22 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<Object>
   public Object VisitBlockStmt(Stmt.Block stmt)
   {
     ExecuteBlock(stmt.statements, new Environment(environment));
+    return null;
+  }
+
+  public Object VisitClassStmt(Stmt.Class stmt)
+  {
+    environment.Define(stmt.name.lexeme, null);
+
+    Dictionary<string, LoxFunction> methods = new Dictionary<string, LoxFunction>();
+    foreach (Stmt.Function method in stmt.methods)
+    {
+      LoxFunction function = new LoxFunction(method.function, environment);
+      methods.Add(method.name.lexeme, function);
+    }
+
+    LoxClass klass = new LoxClass(stmt.name.lexeme, methods);
+    environment.Assign(stmt.name, klass);
     return null;
   }
 

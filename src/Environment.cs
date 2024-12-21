@@ -58,7 +58,8 @@ public class Environment
 
   public Object GetAt(int distance, string name)
   {
-    return Ancestor(distance).values[name];
+    Environment env = Ancestor(distance);
+    return env.values[name];
   }
 
   public void AssignAt(int distance, Token name, Object value)

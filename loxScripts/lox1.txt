@@ -1,10 +1,10 @@
-fun whichFn(fn) {
-  print fn;
+class Cake {
+  taste() {
+    var adjective = "delicious";
+    print "The " + this.flavor + " cake is " + adjective + "!";
+  }
 }
 
-whichFn(fun (b) {
- print b;
-});
-
-fun named(a) { print a; }
-whichFn(named);
+var cakeInts = Cake();
+cakeInts.flavor = "German chocolate";
+cakeInts.taste(); 

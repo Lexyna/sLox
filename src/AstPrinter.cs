@@ -19,6 +19,21 @@ public class AstPrinter : Expr.Visitor<String>
     return Parenthesize("group", expr.expression);
   }
 
+  public string VisitSetExpr(Expr.Set expr)
+  {
+    return $"{expr.name} : {expr.obj.ToString()}";
+  }
+
+  public string VisitGetExpr(Expr.Get expr)
+  {
+    return $"{expr.name} : {expr.obj.ToString()}";
+  }
+
+  public string VisitThisExpr(Expr.This expr)
+  {
+    return "this";
+  }
+
   public string VisitLiteralExpr(Expr.Literal expr)
   {
     if (expr.value == null) return "nil";

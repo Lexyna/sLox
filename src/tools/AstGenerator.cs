@@ -10,9 +10,12 @@ namespace tools
         "Assign : Token name, Expr value",
         "Binary : Expr left, Token op, Expr right",
         "Call : Expr calle, Token paren, List<Expr> arguments",
+        "Get : Expr obj, Token name",
         "Grouping : Expr expression",
         "Literal : Object value",
         "Logical : Expr left, Token op, Expr right",
+        "Set : Expr obj, Token name, Expr value",
+        "This : Token keyword",
         "Unary : Token op, Expr right",
         "Variable : Token name"
         });
@@ -20,6 +23,7 @@ namespace tools
       {
         "Block : List<Stmt> statements",
         "Break : ",
+        "Class : Token name, List<Stmt.Function> methods",
         "Expression : Expr expression",
         "Function : Token name, Expr.Function function",
         "If : Expr condition, Stmt thenBranch, Stmt elseBranch",
