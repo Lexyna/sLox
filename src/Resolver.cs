@@ -257,6 +257,7 @@ public class Resolver : Expr.Visitor<Object>, Stmt.Visitor<Object>
       if (pair.Value.state != Variable.VariableState.READ)
         Lox.Error(pair.Value.name, "Local Variable is never used.");
     }
+    scopes.RemoveAt(scopes.Count - 1);
   }
 
   private void Declare(Token name)

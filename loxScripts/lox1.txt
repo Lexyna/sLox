@@ -5,6 +5,19 @@ class Cake {
   }
 }
 
-var cakeInts = Cake();
-cakeInts.flavor = "German chocolate";
-cakeInts.taste(); 
+class T {
+  taste() {
+    var adjective = " super delicious";
+    print "The " + this.flavor + " cake is " + adjective + "!";
+  }
+}
+
+
+var cake = Cake();
+var cheesCake = T();
+
+cake.flavor = "German chocolate";
+cheesCake.flavor = "Cheese";
+
+cake.taste(); 
+cheesCake.taste();
