@@ -26,12 +26,20 @@ public class Resolver : Expr.Visitor<Object>, Stmt.Visitor<Object>
   private readonly List<Dictionary<string, Variable>> scopes = new List<Dictionary<string, Variable>>();
   private FunctionType currentFunction = FunctionType.NONE;
 
+  private ClassType currentClass = ClassType.NONE;
+
   enum FunctionType
   {
     NONE,
     METHOD,
     FUNCTION,
     LAMBDA_FUNCTION
+  }
+
+  public enum ClassType
+  {
+    NONE,
+    CLASS
   }
 
   public Resolver(Interpreter interpreter)
@@ -55,6 +63,9 @@ public class Resolver : Expr.Visitor<Object>, Stmt.Visitor<Object>
 
   public Object VisitClassStmt(Stmt.Class stmt)
   {
+    ClassType enclosingClass = currentClass;
+    currentClass = ClassType.CLASS;
+
     Declare(stmt.name);
     Define(stmt.name);
 
@@ -69,6 +80,7 @@ public class Resolver : Expr.Visitor<Object>, Stmt.Visitor<Object>
     }
 
     EndScope();
+    currentClass = enclosingClass;
 
     return null;
   }
@@ -198,6 +210,8 @@ public class Resolver : Expr.Visitor<Object>, Stmt.Visitor<Object>
 
   public Object VisitThisExpr(Expr.This expr)
   {
+    if (currentClass == ClassType.NONE)
+      Lox.Error(expr.keyword, "Can't use 'this' keyword outside class.");
     ResolveLocal(expr, expr.keyword, true);
     return null;
   }
