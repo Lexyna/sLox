@@ -19,12 +19,17 @@ public class LoxClass : LoxCallable
 
   public int Arity()
   {
-    return 0;
+    LoxFunction initializer = FindMethod("init");
+    if (initializer == null) return 0;
+    return initializer.Arity();
   }
 
   public object Call(Interpreter interpreter, List<object> arguments)
   {
     LoxInstance instance = new LoxInstance(this);
+    LoxFunction initializer = FindMethod("init");
+    if (initializer != null)
+      initializer.Bind(instance).Call(interpreter, arguments);
     return instance;
   }
 

@@ -33,7 +33,8 @@ public class Resolver : Expr.Visitor<Object>, Stmt.Visitor<Object>
     NONE,
     METHOD,
     FUNCTION,
-    LAMBDA_FUNCTION
+    LAMBDA_FUNCTION,
+    INITIALIZER
   }
 
   public enum ClassType
@@ -76,6 +77,8 @@ public class Resolver : Expr.Visitor<Object>, Stmt.Visitor<Object>
     foreach (Stmt.Function method in stmt.methods)
     {
       FunctionType declaration = FunctionType.METHOD;
+      if (method.name.lexeme.Equals("init"))
+        declaration = FunctionType.INITIALIZER;
       ResolveFunction(method, declaration);
     }
 
@@ -130,7 +133,12 @@ public class Resolver : Expr.Visitor<Object>, Stmt.Visitor<Object>
   {
     if (currentFunction == FunctionType.NONE)
       Lox.Error(stmt.keyword, "Can't return from top-level code.");
-    if (stmt.value != null) Resolve(stmt.value);
+    if (stmt.value != null)
+    {
+      if (currentFunction == FunctionType.INITIALIZER)
+        Lox.Error(stmt.keyword, "Can't return a value from an initalizer.");
+      Resolve(stmt.value);
+    }
     return null;
   }
 
